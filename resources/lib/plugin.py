@@ -74,9 +74,19 @@ def show_detail():
     # print img
     p = Get('http://www.1993s.top/detail/' + id + '.html')
     it = re.finditer(r'<a title=\"(.*?)\" href=\"(.*?)\">(?:.*?)</a>',p)
+
+    plot = ''
+    plotObj = re.search(r'<span class=\"detail-content\" style=\"display: none;\">(.*)',p)
+    if plotObj:
+        plot = plotObj.group(1)
+
     for match in it:
         vid = re.search(r'(\d+-\d+-\d+)',match.group(2)).group()
-        addDirectoryItem(plugin.handle, plugin.url_for(play_Video, video=vid, img=img), ListItem(match.group(1),thumbnailImage=img), True)
+        li = ListItem(match.group(1),thumbnailImage=img)
+        li.setInfo('video',{
+            'plot': plot
+        })
+        addDirectoryItem(plugin.handle, plugin.url_for(play_Video, video=vid, img=img, plot=plot), li, True)
 
     endOfDirectory(plugin.handle)
 
@@ -84,6 +94,7 @@ def show_detail():
 def play_Video():
     img = plugin.args['img'][0]
     video_url = plugin.args['video'][0]
+    plot = plugin.args['plot'][0]
     # print '=======================>'
     # print video_url
     p = Get('http://www.1993s.top/video/' + video_url + '.html')
@@ -92,10 +103,10 @@ def play_Video():
     title = re.search(r'<h4 class=\"title\"><a href=\".*?\">(.*?)</a></h4>',p).group(1)
     li = ListItem(title + ' ' + video_url,thumbnailImage=img)
 
-    plot = ''
-    plotObj = re.search(r'<span class=\"left text-muted\">简介：</span><p>(.*?)</p>',p)
-    if plotObj:
-        plot = plotObj.group(1)
+    # plot = ''
+    # plotObj = re.search(r'<span class=\"left text-muted\">简介：</span><p>(.*?)</p>',p)
+    # if plotObj:
+    #     plot = plotObj.group(1)
 
     # print '=======================>'
     # print plot
