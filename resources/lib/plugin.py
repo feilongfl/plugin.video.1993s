@@ -5,7 +5,7 @@ import logging
 import xbmcaddon
 from resources.lib import kodiutils
 from resources.lib import kodilogging
-from xbmcgui import ListItem, Dialog
+from xbmcgui import ListItem, Dialog, DialogProgress
 from xbmcplugin import addDirectoryItem, endOfDirectory
 
 import urllib2
@@ -19,16 +19,22 @@ kodilogging.config()
 plugin = routing.Plugin()
 dialog = Dialog()
 
-def Post(url,params):
+def Post(url,params,referer=None):
     _params = urllib.urlencode(params)
     req = urllib2.Request(url,_params)
     req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0)')
+    if referer != None:
+        req.add_header('Referer', referer)
+    
     return urllib2.urlopen(req).read()
 
-def Get(url):
+def Get(url, referer=None):
     # print(url)
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0)')
+    if referer != None:
+        req.add_header('Referer', referer)
+    
     return urllib2.urlopen(req).read()
 
 @plugin.route('/')
@@ -92,14 +98,18 @@ def show_detail():
 
 @plugin.route('/video')
 def play_Video():
+    progress = DialogProgress()
+    progress.create('Loading')
+    progress.update(10, "", 'Loading Video Info', "")
     img = plugin.args['img'][0]
     video_url = plugin.args['video'][0]
     plot = plugin.args['plot'][0]
     # print '=======================>'
+    progress.update(40, "", 'Loading Web Files', "")
     # print video_url
     p = Get('http://www.1993s.top/video/' + video_url + '.html')
     match = re.search(r'\"url\":\"(.*?mp4)\"',p)
-    print match.group(1).replace('\/','/')
+    #print match.group(1).replace('\/','/')
     title = re.search(r'<h4 class=\"title\"><a href=\".*?\">(.*?)</a></h4>',p).group(1)
     li = ListItem(title + ' ' + video_url,thumbnailImage=img)
 
@@ -120,8 +130,18 @@ def play_Video():
     #     'status': jsonArr['list']['anime']['is_ended']
     })
     video_url = match.group(1).replace('\/','/')
+    progress.update(70, "", "Analyse Video Url", "")
+    hcc11url = 'https://zxzj.hcc11.com/ParsePlayer/Player/Index/2/?url='
+    p = Get(hcc11url + video_url, referer='http://www.1993s.top/video/' + video_url + '.html')
+    #dialog.ok(video_url,video_url)
+    video_url = re.search(r"var\s*url\s*=\s*'(.*?)'", p).group(1)
+    video_url = re.sub(r"(resp.*)(\d{6})(.*?name)", r"\1\3", video_url)
+    #dialog.ok(video_url,video_url)
+    progress.update(100, "", "", "")
     addDirectoryItem(plugin.handle, video_url, li)
+    progress.close()
     endOfDirectory(plugin.handle)
 
 def run():
     plugin.run()
+    
