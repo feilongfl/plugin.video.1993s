@@ -136,6 +136,9 @@ def play_Video():
     #dialog.ok(video_url,video_url)
     video_url = re.search(r"var\s*url\s*=\s*'(.*?)'", p).group(1)
     video_url = re.sub(r"(resp.*)(\d{6})(.*?name)", r"\1\3", video_url)
+    if video_url[0] == '/':                                                              
+        video_url = 'https://zxzj.hcc11.com' + video_url       
+       
     #dialog.ok(video_url,video_url)
     progress.update(100, "", "", "")
     addDirectoryItem(plugin.handle, video_url, li)
