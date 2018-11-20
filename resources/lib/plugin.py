@@ -25,7 +25,7 @@ def Post(url,params,referer=None):
     req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0)')
     if referer != None:
         req.add_header('Referer', referer)
-    
+
     return urllib2.urlopen(req).read()
 
 def Get(url, referer=None):
@@ -34,7 +34,7 @@ def Get(url, referer=None):
     req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0)')
     if referer != None:
         req.add_header('Referer', referer)
-    
+
     return urllib2.urlopen(req).read()
 
 @plugin.route('/')
@@ -108,7 +108,9 @@ def play_Video():
     progress.update(40, "", 'Loading Web Files', "")
     # print video_url
     p = Get('http://www.1993s.top/video/' + video_url + '.html')
-    match = re.search(r'\"url\":\"(.*?mp4)\"',p)
+    # match = re.search(r'\"url\":\"(.*?mp4)\"',p)
+    match = re.search(r'cms_player\s*=\s*{"url":"(.*?)"',p)
+
     #print match.group(1).replace('\/','/')
     title = re.search(r'<h4 class=\"title\"><a href=\".*?\">(.*?)</a></h4>',p).group(1)
     li = ListItem(title + ' ' + video_url,thumbnailImage=img)
@@ -131,14 +133,18 @@ def play_Video():
     })
     video_url = match.group(1).replace('\/','/')
     progress.update(70, "", "Analyse Video Url", "")
-    hcc11url = 'https://zxzj.hcc11.com/ParsePlayer/Player/Index/2/?url='
-    p = Get(hcc11url + video_url, referer='http://www.1993s.top/video/' + video_url + '.html')
-    #dialog.ok(video_url,video_url)
+    # hcc11url = 'https://zxzj.hcc11.com/ParsePlayer/Player/Index/2/?url='
+    # p = Get(hcc11url + video_url, referer='http://www.1993s.top/video/' + video_url + '.html')
+    # #dialog.ok(video_url,video_url)
+    # video_url = re.search(r"var\s*url\s*=\s*'(.*?)'", p).group(1)
+    # video_url = re.sub(r"(UID=.*?resp.*?)(\d{6})(.*?mp4)", r"\1\3", video_url)
+    # if video_url[0] == '/':
+    #     video_url = 'https://zxzj.hcc11.com' + video_url
+
+    p = Get(video_url, referer='http://www.1993s.top/video/' + video_url + '.html')
     video_url = re.search(r"var\s*url\s*=\s*'(.*?)'", p).group(1)
-    video_url = re.sub(r"(UID=.*?resp.*?)(\d{6})(.*?mp4)", r"\1\3", video_url)
-    if video_url[0] == '/':                                                              
-        video_url = 'https://zxzj.hcc11.com' + video_url       
-       
+
+
     #dialog.ok(video_url,video_url)
     progress.update(100, "", "", "")
     addDirectoryItem(plugin.handle, video_url, li)
@@ -147,4 +153,3 @@ def play_Video():
 
 def run():
     plugin.run()
-    
