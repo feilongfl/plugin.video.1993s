@@ -5,6 +5,7 @@ import logging
 import xbmcaddon
 from resources.lib import kodiutils
 from resources.lib import kodilogging
+import xbmc
 from xbmcgui import ListItem, Dialog, DialogProgress
 from xbmcplugin import addDirectoryItem, endOfDirectory
 
@@ -40,6 +41,15 @@ def Get(url, referer=None):
         req.add_header('Referer', referer)
 
     return urllib2.urlopen(req).read()
+
+def playUrl(video_url,img,plot):
+    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    playlist.clear()
+    li = ListItem(path=video_url,thumbnailImage=img)
+    li.setInfo( type="video", infoLabels={ "Path" : video_url, "plot": plot,} )
+    playlist.add(url=video_url, listitem=li)
+    xbmc.Player().play(playlist)
+
 
 @plugin.route('/')
 def index():
@@ -120,7 +130,7 @@ def play_Video():
     #print match.group(1).replace('\/','/')
     #title = re.search(r'<h4 class=\"title\"><a href=\".*?\">(.*?)</a></h4>',p).group(1)
     title = "video"
-    li = ListItem(title + ' ' + video_url,thumbnailImage=img)
+    # li = ListItem(title + ' ' + video_url,thumbnailImage=img)
 
     # plot = ''
     # plotObj = re.search(r'<span class=\"left text-muted\">简介：</span><p>(.*?)</p>',p)
@@ -130,14 +140,14 @@ def play_Video():
     # print '=======================>'
     # print plot
 
-    li.setInfo("video",{
-    #     'director': jsonArr['list']['anime']['author'],
-        'title': title,
-    #     'originaltitle': jsonArr['list']['anime']['name_jpn'],
-        'plot': plot
-    #     'sorttitle': jsonEpisodes['title'],
-    #     'status': jsonArr['list']['anime']['is_ended']
-    })
+    # li.setInfo("video",{
+    # #     'director': jsonArr['list']['anime']['author'],
+    #     'title': title,
+    # #     'originaltitle': jsonArr['list']['anime']['name_jpn'],
+    #     'plot': plot
+    # #     'sorttitle': jsonEpisodes['title'],
+    # #     'status': jsonArr['list']['anime']['is_ended']
+    # })
     video_url = match.group(1).replace("\\","")
     progress.update(60, "", "Analyse Video Url", "")
 
@@ -155,9 +165,11 @@ def play_Video():
 
     #dialog.ok(video_url,video_url)
     progress.update(100, "", "", "")
-    addDirectoryItem(plugin.handle, video_url, li)
+    # addDirectoryItem(plugin.handle, video_url, li)
     progress.close()
-    endOfDirectory(plugin.handle)
+
+    playUrl(video_url,img,plot)
+    # endOfDirectory(plugin.handle)
 
 def run():
     plugin.run()
