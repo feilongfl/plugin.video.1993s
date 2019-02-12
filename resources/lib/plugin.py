@@ -67,9 +67,11 @@ def index():
 def show_search_input():
     s = dialog.input('Search')
     # print s
-    p = Post('http://www.zxzjs.com/index.php?s=vod-search',{ 'wd': s })
+    # p = Post('http://www.zxzjs.com/index.php?s=vod-search',{ 'wd': s })
+    p = Get('https://www.zxzjs.com/vodsearch/-------------.html?wd=%s' % s)
     # print p
-    it = re.finditer( r'<a class=\"v-thumb stui-vodlist__thumb lazyload\" href=\"(.*?)\" title=\"(.*?)\" data-original=\"(.*?)\">', p)
+    # it = re.finditer( r'<a class=\"v-thumb stui-vodlist__thumb lazyload\" href=\"(.*?)\" title=\"(.*?)\" data-original=\"(.*?)\">', p)
+    it = re.finditer(r'<a class="stui-vodlist__thumb lazyload" href="(.*?)" title="(.*?)" data-original="(.*?)">', p)
 
     for match in it:
         id = re.search(r'\d+',match.group(1)).group()
